@@ -1,0 +1,76 @@
+import requests
+from bs4 import BeautifulSoup
+import argparse
+import sys
+
+def scrape(url, element, table):
+    try:
+        # Send a GET request to the webpage
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+        
+        # Parse the HTML content
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        # Locate the desired element containing the desired table class
+        desired_element = soup.find(element)
+        if not desired_element:
+            raise ValueError("Element not found.")
+        
+        desired_table = desired_element.find('table', class_=table)
+        if not desired_table:
+            raise ValueError("Table not found inside element.")
+        
+        # Extract table rows and data
+        rows = desired_table.find_all('tr')
+        for row in rows:
+            cells = row.find_all('td')
+            data = [cell.get_text(strip=True) for cell in cells]
+            print(data)
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error occurred while making the HTTP request: {e}")
+    except ValueError as e:
+        print(f"Data extraction error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+def main():
+    parser = argparse.ArgumentParser(
+    )
+    parser.add_argument(
+        'url', metavar='URL', type=str, nargs='?',
+        help="The URL."
+    )
+
+    parser.add_argument(
+        'element', metavar='ELEMENT', type=str, nargs='?',
+        help="The name of the ELEMENT to be parsed (parent object)."
+    )
+
+    parser.add_argument(
+        'table', metavar='TABLE', type=str, nargs='?',
+        help="The name of the TABLE class to be read."
+    )
+
+    args = parser.parse_args()
+
+    if not args.url:
+        print("Error: No URL provided.")
+        parser.print_help()
+        sys.exit(1)
+
+    if not args.element:
+        print("Error: No ELEMENT provided.")
+        parser.print_help()
+        sys.exit(1)
+
+    if not args.table:
+        print("Error: No TABLE provided.")
+        parser.print_help()
+        sys.exit(1)
+
+    scrape(args.url, args.element, args.table)
+
+if __name__ == '__main__':
+    main()

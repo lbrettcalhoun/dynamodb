@@ -1,0 +1,55 @@
+# A list of objects, each object contains an attribute's name and type.
+variable "attribute_definitions" {
+  description = "The attribute definitions for the DynamoDB table"
+  type = list(object({
+    attribute_name = string
+    attribute_type = string
+  }))
+}
+
+# A list of strings, each string is the name of a GSI hash key.
+# This variable is used to create multiple GSIs. 
+# Note that each GSI will have the same range key (see main.tf ... possible future improvement).
+variable "gsi_hash_keys" {
+  description = "The hash key(s) for the Global Secondary Index(es) (GSI)"
+  type        = list(string)
+  default     = null
+}
+
+variable "hash_key" {
+  description = "The hash key for the DynamoDB table"
+  type        = string
+}
+
+variable "range_key" {
+  description = "The range key for the DynamoDB table"
+  type        = string
+}
+
+variable "rcu" {
+  description = "The read capacity units for the DynamoDB table"
+  type        = number
+  default     = 5
+
+  validation {
+    condition     = var.rcu > 0 && var.rcu <= 10
+    error_message = "The read capacity units must be between 1 and 10."
+  }
+}
+
+variable "table_name" {
+  description = "The name of the DynamoDB table"
+  type        = string
+
+}
+
+variable "wcu" {
+  description = "The write capacity units for the DynamoDB table"
+  type        = number
+  default     = 5
+
+  validation {
+    condition     = var.wcu > 0 && var.wcu <= 10
+    error_message = "The write capacity units must be between 1 and 10."
+  }
+}
