@@ -14,16 +14,33 @@ variable "gsi_hash_keys" {
   description = "The hash key(s) for the Global Secondary Index(es) (GSI)"
   type        = list(string)
   default     = null
+
+  # Wow, this is slick! The validation block is used to check if the GSI hash key(s) are 1 of the attribute definitions.
+  # The alltrue function is used to check if all elements in the list are true.
+  validation {
+    condition     = alltrue([for i in var.gsi_hash_keys : contains(var.attribute_definitions[*].attribute_name, i)])
+    error_message = "The GSI hash key(s) must be 1 of the attribute definitions."
+  }
 }
 
 variable "hash_key" {
   description = "The hash key for the DynamoDB table"
   type        = string
+
+  validation {
+    condition     = contains(var.attribute_definitions[*].attribute_name, var.hash_key)
+    error_message = "The hash key must be 1 of the attribute definitions."
+  }
 }
 
 variable "range_key" {
   description = "The range key for the DynamoDB table"
   type        = string
+
+  validation {
+    condition     = contains(var.attribute_definitions[*].attribute_name, var.range_key)
+    error_message = "The range key must be 1 of the attribute definitions."
+  }
 }
 
 variable "rcu" {
