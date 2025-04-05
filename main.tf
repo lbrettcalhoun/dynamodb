@@ -1,4 +1,5 @@
 terraform {
+  required_version = ">= 1.11.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -34,7 +35,7 @@ resource "aws_dynamodb_table" "self" {
   }
 
   ttl {
-    attribute_name = "TTL"
+    attribute_name = "ttl"
     enabled        = true
   }
 
