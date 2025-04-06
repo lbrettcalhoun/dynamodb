@@ -61,3 +61,8 @@ resource "aws_dynamodb_table" "self" {
     Name = var.table_name
   }
 }
+
+resource "aws_dynamodb_resource_policy" "self" {
+  resource_arn = aws_dynamodb_table.self.arn
+  policy       = data.aws_iam_policy_document.self.json
+}
