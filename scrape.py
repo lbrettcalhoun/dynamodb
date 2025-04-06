@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import argparse
+import json
 import sys
 
 def scrape(url, element, table):
@@ -23,10 +24,27 @@ def scrape(url, element, table):
         
         # Extract table rows and data
         rows = desired_table.find_all('tr')
-        for row in rows:
+         # List to store row data as dictionaries
+        table_data = [] 
+
+        # Treat the second row of <td> elements as headers
+        headers = [cell.get_text(strip=True) for cell in rows[1].find_all('td')] if rows else None
+
+        # Skip the second row since it's used as headers and then walk through the rest of the rows
+        for row in rows[2:]:  
             cells = row.find_all('td')
             data = [cell.get_text(strip=True) for cell in cells]
-            print(data)
+            
+            if headers:
+                row_dict = {headers[i]: data[i] for i in range(len(data))}
+            else:
+                row_dict = {f"column{i+1}": data[i] for i in range(len(data))}
+            
+            table_data.append(row_dict)
+
+        # Convert the list of dictionaries to JSON
+        json_data = json.dumps(table_data, indent=4)
+        print(json_data)
 
     except requests.exceptions.RequestException as e:
         print(f"Error occurred while making the HTTP request: {e}")
