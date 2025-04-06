@@ -54,6 +54,17 @@ variable "rcu" {
   }
 }
 
+variable role {
+  description = "The IAM role to be used for access to the DynamoDB table"
+  type        = string
+  default     = "dynamodb-role"
+
+  validation {
+    condition     = length(var.role) > 0
+    error_message = "The IAM role must not be empty."
+  }
+}
+
 variable "table_name" {
   description = "The name of the DynamoDB table"
   type        = string
