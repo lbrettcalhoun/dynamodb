@@ -1,12 +1,15 @@
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
 import argparse
 import boto3
 import json
 import requests
 import sys
 
-def scrape(url, element, table, dbtable, date_string):
+def scrape(url, element, table, dbtable, now):
+    date_string = now.strftime("%Y-%m-%d %H:%M:%S")
+    ttl = datetime.now() + timedelta(days=30)
+    ttl_string = ttl.strftime("%Y-%m-%d %H:%M:%S")
     try:
         # Send a GET request to the webpage
         response = requests.get(url)
@@ -32,12 +35,14 @@ def scrape(url, element, table, dbtable, date_string):
         # Treat the second row of <td> elements as headers
         headers = [cell.get_text(strip=True) for cell in rows[1].find_all('td')] if rows else None
         headers.append('timestamp')
+        headers.append('ttl')
 
         # Skip the second row since it's used as headers and then walk through the rest of the rows
         for row in rows[2:]:  
             cells = row.find_all('td')
             data = [cell.get_text(strip=True) for cell in cells]
             data.append(date_string)  # Append the timestamp to each row
+            data.append(ttl_string)
             
             if headers:
                 row_dict = {headers[i]: data[i] for i in range(len(data))}
@@ -113,10 +118,9 @@ def main():
     dbtable = dynamodb.Table(args.dbtable)
 
     now = datetime.now()
-    date_string = now.strftime("%Y-%m-%d %H:%M:%S")
-    print(f"Starting scrape at {date_string}")
+    print(f"Starting scrape at {now}")
 
-    scrape(args.url, args.element, args.table, dbtable, date_string)
+    scrape(args.url, args.element, args.table, dbtable, now)
 
 if __name__ == '__main__':
     main()
