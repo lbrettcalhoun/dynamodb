@@ -6,7 +6,14 @@ import json
 import requests
 import sys
 
-def scrape(url, element, table, dbtable, now):
+# This function is used to clean up the "numeric" columns by removing unwanted characters (such as measurement units like "in", "ft").
+# It examines the string and removes any characters that are in the provided list.
+def strip_string(s, strip_list):
+    for item in strip_list:
+        s = s.replace(item, "")
+    return s
+
+def scrape(url, element, table, dbtable, s, now):
     date_string = now.strftime("%Y-%m-%d %H:%M:%S")
     ttl = datetime.now() + timedelta(days=30)
     ttl_string = ttl.strftime("%Y-%m-%d %H:%M:%S")
@@ -40,20 +47,25 @@ def scrape(url, element, table, dbtable, now):
         # Skip the second row since it's used as headers and then walk through the rest of the rows
         for row in rows[2:]:  
             cells = row.find_all('td')
-            data = [cell.get_text(strip=True) for cell in cells]
-            data.append(date_string)  # Append the timestamp to each row
+            data = []
+            for cell in cells:
+                if s:
+                    # Some of the "numeric" cells may have characters (such as units, like "inches")
+                    # Strip the specified strings from the cell text
+                    stripped_text = strip_string(cell.get_text(strip=True), s)
+                    data.append(stripped_text)
+                else:
+                    data.append(cell.get_text(strip=True))
+
+            data.append(date_string)
             data.append(ttl_string)
-            
+
             if headers:
                 row_dict = {headers[i]: data[i] for i in range(len(data))}
             else:
                 row_dict = {f"column{i+1}": data[i] for i in range(len(data))}
             
             table_data.append(row_dict)
-
-        # Convert the list of dictionaries to JSON
-        json_data = json.dumps(table_data, indent=4)
-        print(json_data)
 
         # Load the data into DynamoDB
         with dbtable.batch_writer() as batch:
@@ -79,17 +91,22 @@ def main():
 
     parser.add_argument(
         'element', metavar='ELEMENT', type=str, nargs='?',
-        help="The name of the ELEMENT to be parsed (parent object)."
+        help="The name of the HTML ELEMENT to be parsed (parent object)."
     )
 
     parser.add_argument(
         'table', metavar='TABLE', type=str, nargs='?',
-        help="The name of the TABLE class to be read."
+        help="The name of the HTML TABLE class to be read."
     )
 
     parser.add_argument(
         'dbtable', metavar='DBTABLE', type=str, nargs='?',
         help="The name of the DYNAMODB TABLE."
+    )
+
+    parser.add_argument(
+        '-s', '--strips', type=str, nargs='+',
+        help="A list of strings to strip from the 'numeric' HTML table data values."
     )
 
     args = parser.parse_args()
@@ -120,7 +137,7 @@ def main():
     now = datetime.now()
     print(f"Starting scrape at {now}")
 
-    scrape(args.url, args.element, args.table, dbtable, now)
+    scrape(args.url, args.element, args.table, dbtable, args.strips, now)
 
 if __name__ == '__main__':
     main()
