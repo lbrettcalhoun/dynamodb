@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
+from decimal import Decimal
 import argparse
 import boto3
-import json
 import requests
 import sys
 
@@ -12,6 +12,24 @@ def strip_string(s, strip_list):
     for item in strip_list:
         s = s.replace(item, "")
     return s
+
+def strip_dict(d):
+    new_dict = {}
+    for key, value in d.items():
+        if isinstance(value, str):
+            try:
+                # Attempt to convert the string to an integer
+                new_dict[key] = int(value)
+            except ValueError:
+                # If conversion fails, convert the string to a float and then convert float to Decimal
+                # Why oh why DynamoDB do you not support floats?
+                try:
+                    new_dict[key] = float(value)
+                    new_dict[key] = Decimal(str(new_dict[key]))
+                except ValueError:
+                    # If conversion fails, keep the string as is
+                    new_dict[key] = value       
+    return new_dict
 
 def scrape(url, element, table, dbtable, s, now):
     date_string = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -70,8 +88,8 @@ def scrape(url, element, table, dbtable, s, now):
         # Load the data into DynamoDB
         with dbtable.batch_writer() as batch:
             for item in table_data:
-                batch.put_item(Item=item)
-                print(f"Inserted item: {item}")
+                stripped_item = strip_dict(item)
+                batch.put_item(Item=stripped_item)
         print("Data inserted into DynamoDB successfully.")
 
     except requests.exceptions.RequestException as e:
