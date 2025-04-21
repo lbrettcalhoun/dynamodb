@@ -1,6 +1,9 @@
 import boto3
+import logging
 import os
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 def fetch_dynamodb_items(table_name):
     dynamodb = boto3.resource("dynamodb")
@@ -25,10 +28,16 @@ def generate_html_table(items):
     return html
 
 def lambda_handler(event, context):
+    logger.info("Lambda function started.")
+    logger.info(f"Event: {event}")
+    logger.info(f"Context: {context}")
     table_name = os.getenv("TABLE_NAME", "dynamotable")
+    logger.info(f"Fetching items from DynamoDB table: {table_name}")
     items = fetch_dynamodb_items(table_name)
+    logger.info(f"Generating HTML table for {len(items)} items.")
     html_table = generate_html_table(items)
-
+    logger.info("Response code: 200")
+    logger.info("Lambda function completed successfully.")
     return {
         "statusCode": 200,
         "headers": {"Content-Type": "text/html"},
