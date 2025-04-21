@@ -7,6 +7,19 @@ variable "attribute_definitions" {
   }))
 }
 
+variable function_description {
+  description = "The description of the Lambda function"
+  type        = string
+  default     = "My lambda function"
+}
+
+variable function_name {
+  description = "The name of the Lambda function"
+  type        = string
+  default     = "my-lambda-function"
+}
+
+
 # A list of strings, each string is the name of a GSI hash key.
 # This variable is used to create multiple GSIs. 
 # Note that each GSI will have the same range key (see main.tf ... possible future improvement).
