@@ -1,5 +1,5 @@
 import boto3
-import botocore.exceptions  # Import botocore exceptions
+import botocore.exceptions
 import logging
 import os
 
