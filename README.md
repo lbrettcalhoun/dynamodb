@@ -3,6 +3,7 @@ Terraform IaC for a DynamoDB table and supporting resources.
 Notes:
   - Variables can be passed in on command line or via terraform.tfvars (not included in this repo).
   - Need an IAM user account with appropriate permissions to create the associated resources. 
+  - Need IAM user account(s) to be used for DynamoDB table reads, writes and Lambda executions
   - The python script can be used to scrape a website for table data.
 
 Shortcuts:

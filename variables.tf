@@ -7,6 +7,28 @@ variable "attribute_definitions" {
   }))
 }
 
+variable ex_role {
+  description = "The IAM role to be used for execute access to the Lambda report function"
+  type        = string
+  default     = "dynamodb-role-ex"
+
+  validation {
+    condition     = length(var.ex_role) > 0
+    error_message = "The IAM role must not be empty."
+  }
+}
+
+variable ex_user {
+  description = "The IAM user to be used for execute access to the Lambda report function"
+  type        = string
+  default     = "dynamodb-user-ex"
+
+  validation {
+    condition     = length(var.ex_user) > 0
+    error_message = "The IAM user must not be empty."
+  }
+}
+
 variable function_description {
   description = "The description of the Lambda function"
   type        = string
@@ -56,6 +78,28 @@ variable "range_key" {
   }
 }
 
+variable rd_role {
+  description = "The IAM role to be used for read access to the DynamoDB table"
+  type        = string
+  default     = "dynamodb-role-rd"
+
+  validation {
+    condition     = length(var.rd_role) > 0
+    error_message = "The IAM role must not be empty."
+  }
+}
+
+variable rd_user {
+  description = "The IAM user to be used for read access to the DynamoDB table"
+  type        = string
+  default     = "dynamodb-user-rd"
+
+  validation {
+    condition     = length(var.rd_user) > 0
+    error_message = "The IAM user must not be empty."
+  }
+}
+
 variable "rcu" {
   description = "The read capacity units for the DynamoDB table"
   type        = number
@@ -64,17 +108,6 @@ variable "rcu" {
   validation {
     condition     = var.rcu > 0 && var.rcu <= 10
     error_message = "The read capacity units must be between 1 and 10."
-  }
-}
-
-variable role {
-  description = "The IAM role to be used for access to the DynamoDB table"
-  type        = string
-  default     = "dynamodb-role"
-
-  validation {
-    condition     = length(var.role) > 0
-    error_message = "The IAM role must not be empty."
   }
 }
 
@@ -92,5 +125,27 @@ variable "wcu" {
   validation {
     condition     = var.wcu > 0 && var.wcu <= 10
     error_message = "The write capacity units must be between 1 and 10."
+  }
+}
+
+variable wr_role {
+  description = "The IAM role to be used for write access to the DynamoDB table"
+  type        = string
+  default     = "dynamodb-role-wr"
+
+  validation {
+    condition     = length(var.wr_role) > 0
+    error_message = "The IAM role must not be empty."
+  }
+}
+
+variable wr_user {
+  description = "The IAM user to be used for write access to the DynamoDB table"
+  type        = string
+  default     = "dynamodb-user-wr"
+
+  validation {
+    condition     = length(var.wr_user) > 0
+    error_message = "The IAM user must not be empty."
   }
 }
