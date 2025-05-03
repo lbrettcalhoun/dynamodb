@@ -14,9 +14,13 @@ module "lambda_function" {
     allowed_methods = ["GET"]
     allowed_origins = ["*"]
   }
-  create_lambda_function_url = true
+  # create_lambda_function_url = true
   environment_variables = {
     TABLE_NAME = aws_dynamodb_table.self.name
+    PART_KEY = var.hash_key
+    SORT_KEY = var.range_key
+    PART_VALUE = var.part_value
+    SORT_VALUE = var.sort_value
   }
   handler       = "lambda_function.lambda_handler"
   policy_json = <<-EOT

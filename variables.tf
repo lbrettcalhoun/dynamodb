@@ -68,6 +68,11 @@ variable "hash_key" {
   }
 }
 
+variable "part_value" {
+  description = "The partition key search value to be passed (as an env var) to the lambda function"
+  type        = string
+}
+
 variable "range_key" {
   description = "The range key for the DynamoDB table"
   type        = string
@@ -109,6 +114,11 @@ variable "rcu" {
     condition     = var.rcu > 0 && var.rcu <= 10
     error_message = "The read capacity units must be between 1 and 10."
   }
+}
+
+variable "sort_value" {
+  description = "The sort key search value to be passed (as an env var) to the lambda function"
+  type = string
 }
 
 variable "table_name" {
