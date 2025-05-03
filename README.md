@@ -7,6 +7,8 @@ Notes:
   - The python script can be used to scrape a website for table data.
   - Need Postman (or another suitable client) to access the function URL.
 
+Additional Note: Function URL currently disabled
+
 Recommendations:
   - A python virtual environment
 
@@ -25,6 +27,7 @@ Shortcuts:
   - Each GSI uses the "ALL" projection type
   - The table billing mode is "PROVISIONED"
   - The table TTL attribute is "TTL" and TTL is enabled
+  - The fetch_dynamodb_items function casts part_value to integer
 
 Missing:
   - PITR

@@ -1,17 +1,25 @@
 import boto3
 import botocore.exceptions
+from boto3.dynamodb.conditions import Key, Attr
+from datetime import datetime, timedelta
 import logging
 import os
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-def fetch_dynamodb_items(table_name):
+def fetch_dynamodb_items(table_name, part_key, part_value, sort_key, sort_value):
     try:
         dynamodb = boto3.resource("dynamodb")
+        # Ignore the syntax warning for the table name ... no idea why VS Code is complaining about this
         table = dynamodb.Table(table_name)
 
-        response = table.scan()
+        response = table.query(
+            Select='ALL_ATTRIBUTES',
+            KeyConditionExpression=Key(part_key).eq(int(part_value)) & Key(sort_key).gte(sort_value),
+            Limit=100
+        )
+        logger.info(f"Query response: {response}")
         return response.get("Items", [])
     except botocore.exceptions.ClientError as e:
         # Handle AWS service-specific errors
@@ -56,11 +64,15 @@ def lambda_handler(event, context):
     logger.info(f"Context: {context}")
     
     table_name = os.getenv("TABLE_NAME", "dynamotable")
+    part_key = os.getenv("PART_KEY")
+    sort_key = os.getenv("SORT_KEY")
+    part_value = os.getenv("PART_VALUE")
+    sort_value = os.getenv("SORT_VALUE")
     logger.info(f"Fetching items from DynamoDB table: {table_name}")
     
     try:
         # Fetch items from DynamoDB
-        items = fetch_dynamodb_items(table_name)
+        items = fetch_dynamodb_items(table_name, part_key, part_value, sort_key, sort_value)
         
         # Generate HTML table
         logger.info(f"Generating HTML table for {len(items)} items.")
